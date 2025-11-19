@@ -49,8 +49,10 @@ Our services (FastAPI, Flink, etc.) will read these variables when connecting to
 
 ## 4. Testing Kafka with kcat
 You can use `kcat` to quickly test Kafka topics.
+
+```bash
 echo "hello-from-kafka" | kcat -P -b localhost:9092 -t test-topic
 kcat -C -b localhost:9092 -t test-topic -o beginning -q
-
+```
 Output should show:
 hello-from-kafka
