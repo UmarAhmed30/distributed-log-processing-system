@@ -36,3 +36,7 @@ curl "http://localhost:8123/?user=logs_user&password=logs_pass&query=SELECT%201"
 ```
 Output should show:
 1
+
+docker exec -it clickhouse bash
+
+clickhouse-client --user=logs_user --password=logs_pass -d logs_db
