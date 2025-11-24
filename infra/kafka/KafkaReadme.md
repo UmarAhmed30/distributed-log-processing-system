@@ -58,6 +58,19 @@ Output should show:
 hello-from-kafka
 
 
+
 ./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --topic raw_logs
 
 cat sample.json | docker exec -i kafka ./opt/kafka/bin/kafka-console-producer.sh --broker-list kafka:9092 --topic raw_logs
+
+docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic raw_logs --from-beginning
+
+docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server kafka:9092 --topic
+
+docker exec -it kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --delete --topic raw_logs
+
+docker exec -it kafka /opt/kafka/bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --topic raw_logs
+
+docker exec -it kafka /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
+
+docker exec -it kafka /opt/kafka/bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --topic raw_logs --partitions 3 --replication-factor 1
