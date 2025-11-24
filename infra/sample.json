@@ -1,0 +1,20 @@
+{
+    "@timestamp": "2025-11-23T10:00:00.123Z",
+    "log": {
+        "level": "ERROR",
+        "file": {
+            "path": "/var/log/payment-service/app.log"
+        }
+    },
+    "service": {
+        "type": "application",
+        "name": "payment-service"
+    },
+    "host": {
+        "name": "worker-node-01",
+        "ip": ["192.168.1.15", "10.0.0.5"]
+    },
+    "message": "Transaction failed due to timeout connecting to database.",
+    "trace_id": "a1b2c3d4e5f6",
+    "span_id": "1234567890"
+}

@@ -56,3 +56,8 @@ kcat -C -b localhost:9092 -t test-topic -o beginning -q
 ```
 Output should show:
 hello-from-kafka
+
+
+./opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --topic raw_logs
+
+cat sample.json | docker exec -i kafka ./opt/kafka/bin/kafka-console-producer.sh --broker-list kafka:9092 --topic raw_logs

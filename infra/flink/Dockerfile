@@ -8,4 +8,10 @@ RUN apt-get update && \
 
 RUN pip install apache-flink==1.18.1
 
+COPY connectors/flink-connector-kafka-1.17.1.jar /opt/flink/lib/
+COPY connectors/flink-connector-jdbc-3.1.0-1.17.jar /opt/flink/lib/
+COPY connectors/clickhouse-jdbc-0.6.0-all.jar /opt/flink/lib/
+COPY connectors/flink-json-1.17.1.jar /opt/flink/lib/
+COPY connectors/kafka-clients-3.2.3.jar /opt/flink/lib/
+
 USER flink

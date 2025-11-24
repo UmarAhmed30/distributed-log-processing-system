@@ -3,17 +3,19 @@ CREATE TABLE logs (
     timestamp DateTime64(3, 'UTC'),
     severity LowCardinality(String),
     source_type LowCardinality(String),
-    service_name String,
+    service_name LowCardinality(String),
     host String,
     host_ip IPv4,
+    file_path String,
     message String,
     raw_message String,
     trace_id String,
     span_id String,
     metadata String
 )
-ENGINE = MergeTree
-ORDER BY timestamp;
+ENGINE = ReplacingMergeTree
+ORDER BY timestamp
+TTL toDateTime(timestamp) + INTERVAL 30 DAY
 
 SELECT count() FROM logs;
 
@@ -25,6 +27,7 @@ INSERT INTO logs (
     service_name,
     host,
     host_ip,
+    file_path,
     message,
     raw_message,
     trace_id,
@@ -38,6 +41,7 @@ INSERT INTO logs (
     'nginx',
     'gcp-vm-3',
     '10.128.0.42',
+    '/var/log/payment-service/app.log',
     'Nginx failed to reach backend',
     'GET /api/v1/user 502 120ms upstream error',
     'trace-89123',

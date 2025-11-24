@@ -38,8 +38,9 @@ services:
 
   jobmanager:
     container_name: flink_jobmanager
-    build: 
-        dockerfile: flink/Dockerfile
+    build:
+        context: ./flink
+        dockerfile: Dockerfile
     ports:
     - "8081:8081"
     command: jobmanager
@@ -47,11 +48,14 @@ services:
     - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
+    volumes:
+      - ./flink/jobs:/opt/flink/usrlib
 
   taskmanager:
     container_name: flink_taskmanager
     build: 
-        dockerfile: flink/Dockerfile
+        context: ./flink
+        dockerfile: Dockerfile
     depends_on:
     - jobmanager
     command: taskmanager
@@ -61,6 +65,8 @@ services:
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
         taskmanager.numberOfTaskSlots: 2
+    volumes:
+      - ./flink/jobs:/opt/flink/usrlib
 
   redis:
     image: redis:7-alpine
