@@ -1,0 +1,11 @@
+{"timestamp": "2025-11-25T22:50:16.488684Z", "service": "orders-service", "level": "ERROR", "message": "Sample log from orders-service", "metadata": {"request_id": "req-5131", "user_id": 99}}
+{"timestamp": "2025-11-25T22:50:17.492714Z", "service": "payment-service", "level": "ERROR", "message": "Sample log from payment-service", "metadata": {"request_id": "req-7200", "user_id": 84}}
+{"timestamp": "2025-11-25T22:50:18.498140Z", "service": "auth-service", "level": "ERROR", "message": "Sample log from auth-service", "metadata": {"request_id": "req-7165", "user_id": 10}}
+{"timestamp": "2025-11-25T22:50:19.503966Z", "service": "orders-service", "level": "WARN", "message": "Sample log from orders-service", "metadata": {"request_id": "req-5405", "user_id": 33}}
+{"timestamp": "2025-11-25T22:50:20.509813Z", "service": "auth-service", "level": "INFO", "message": "Sample log from auth-service", "metadata": {"request_id": "req-3270", "user_id": 72}}
+{"timestamp": "2025-11-25T22:50:21.515284Z", "service": "payment-service", "level": "INFO", "message": "Sample log from payment-service", "metadata": {"request_id": "req-9812", "user_id": 60}}
+{"timestamp": "2025-11-25T22:50:22.520713Z", "service": "auth-service", "level": "INFO", "message": "Sample log from auth-service", "metadata": {"request_id": "req-3574", "user_id": 30}}
+{"timestamp": "2025-11-25T22:50:23.526413Z", "service": "orders-service", "level": "WARN", "message": "Sample log from orders-service", "metadata": {"request_id": "req-3103", "user_id": 69}}
+{"timestamp": "2025-11-25T22:50:24.532188Z", "service": "payment-service", "level": "ERROR", "message": "Sample log from payment-service", "metadata": {"request_id": "req-6652", "user_id": 37}}
+{"timestamp": "2025-11-25T22:50:25.537805Z", "service": "payment-service", "level": "WARN", "message": "Sample log from payment-service", "metadata": {"request_id": "req-2798", "user_id": 50}}
+{"timestamp": "2025-11-25T22:50:26.543653Z", "service": "auth-service", "level": "INFO", "message": "Sample log from auth-service", "metadata": {"request_id": "req-4344", "user_id": 18}}

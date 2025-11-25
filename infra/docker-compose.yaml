@@ -4,13 +4,15 @@ services:
     container_name: kafka
     ports:
       - "9092:9092"
+      - "9094:9094"
     environment:
       - KAFKA_NODE_ID=1
       - KAFKA_PROCESS_ROLES=broker,controller
-      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:19092,CONTROLLER://0.0.0.0:9093,PLAINTEXT://0.0.0.0:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:19092,PLAINTEXT://localhost:9092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
       - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
       - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
@@ -26,8 +28,8 @@ services:
     image: clickhouse/clickhouse-server:24.8
     container_name: clickhouse
     ports:
-      - "8123:8123" # HTTP interface
-      - "9000:9000" # Native TCP interface
+      - "8123:8123"
+      - "9000:9000"
     environment:
       CLICKHOUSE_DB: logs_db
       CLICKHOUSE_USER: logs_user
@@ -43,10 +45,10 @@ services:
         context: ./flink
         dockerfile: Dockerfile
     ports:
-    - "8081:8081"
+      - "8081:8081"
     command: jobmanager
     environment:
-    - |
+      - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
     volumes:
@@ -58,11 +60,10 @@ services:
         context: ./flink
         dockerfile: Dockerfile
     depends_on:
-    - jobmanager
+      - jobmanager
     command: taskmanager
-    scale: 1
     environment:
-    - |
+      - |
         FLINK_PROPERTIES=
         jobmanager.rpc.address: jobmanager
         taskmanager.numberOfTaskSlots: 2
@@ -77,6 +78,17 @@ services:
     volumes:
       - redis-data:/data
     restart: unless-stopped  
+
+  fluent-bit:
+    image: fluent/fluent-bit:2.2
+    container_name: fluent-bit
+    depends_on:
+      - kafka
+    volumes:
+      - ./fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - ./fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf:ro
+      - ../runtime/logs:/var/log/services:ro
+    command: ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf"]
 
 volumes:
   kafka-data:
