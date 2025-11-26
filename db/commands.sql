@@ -20,7 +20,6 @@ TTL toDateTime(timestamp) + INTERVAL 30 DAY
 SELECT count() FROM logs;
 
 INSERT INTO logs (
-    log_id,
     timestamp,
     severity,
     source_type,
@@ -34,7 +33,6 @@ INSERT INTO logs (
     span_id,
     metadata
 ) VALUES (
-    generateUUIDv4(),
     '2025-11-23 18:45:12.500',
     'ERROR',
     'server',
@@ -50,3 +48,5 @@ INSERT INTO logs (
 );
 
 SELECT * FROM logs LIMIT 10;
+
+ALTER TABLE logs MODIFY COLUMN log_id UUID default generateUUIDv4();
