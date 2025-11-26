@@ -1,3 +1,4 @@
 *.env
 infra/flink/Dockerfile
 *.log
+*/connectors/
