@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from db.client import client
 from infra.redis.client import RedisCache
+from utils.log_advisor import analyze
 
 app = FastAPI(title="Distributed Log Processing System API")
 redis = RedisCache()
@@ -18,7 +19,7 @@ redis = RedisCache()
 # -------------------------------
 
 class SuggestFixRequest(BaseModel):
-    error: str
+    log_id: str
 
 class SummarizeLogsRequest(BaseModel):
     logs: List[Dict[str, Any]]
@@ -86,16 +87,38 @@ def get_logs(
     return [dict(zip(columns, row)) for row in result]
 
 
-@app.post("/suggest_fix")
-def suggest_fix(payload: SuggestFixRequest):
-    error = payload.error
-    fake_result = {
-        "error": error,
-        "likely_cause": "Possible database/network timeout or invalid configuration.",
-        "suggested_fix": "Check DB connection pool, retry logic, and service configuration.",
+@app.post("/suggest")
+def suggest(payload: SuggestFixRequest):
+    log_id = payload.log_id
+    query = f"""
+        SELECT severity, message, timestamp, service_name
+        FROM logs
+        WHERE log_id = '{log_id}'
+        LIMIT 1
+    """
+    result = client.query(query).result_rows
+    columns = client.query(query).column_names
+    if not result:
+        return {"error": "Log not found"}
+    row = dict(zip(columns, result[0]))
+    severity = row["severity"]
+    message = row["message"]
+    timestamp = str(row["timestamp"])
+    service_name = row["service_name"]
+    explanation = analyze(
+        severity=severity,
+        message=message,
+        timestamp=timestamp,
+        service_name=service_name,
+    )
+    return {
+        "log_id": log_id,
+        "severity": severity,
+        "service_name": service_name,
+        "timestamp": timestamp,
+        "message": message,
+        "analysis": explanation,
     }
-    return fake_result
-
 
 @app.get("/dashboard/top_errors")
 def dashboard_top_errors(time_range: str = "1h", limit: int = 20):
