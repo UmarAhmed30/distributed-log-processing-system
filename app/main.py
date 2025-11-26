@@ -8,8 +8,10 @@ import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from db.client import client
+from infra.redis.client import RedisCache
 
 app = FastAPI(title="Distributed Log Processing System API")
+redis = RedisCache()
 
 # -------------------------------
 # Models
@@ -33,6 +35,15 @@ def build_time_range(time_range: str) -> str:
     if time_range.endswith("d"):
         return f"now('UTC') - INTERVAL {time_range[:-1]} DAY"
     return "now('UTC') - INTERVAL 1 HOUR"
+
+def cache(endpoint, params, compute_fn, ttl=60):
+    key = redis.get_key(endpoint, params)
+    cached = redis.get(key)
+    if cached:
+        return cached
+    value = compute_fn()
+    redis.set(key, value, ttl)
+    return value
 
 # -------------------------------
 # Endpoints
@@ -88,69 +99,77 @@ def suggest_fix(payload: SuggestFixRequest):
 
 @app.get("/dashboard/top_errors")
 def dashboard_top_errors(time_range: str = "1h", limit: int = 20):
-    query = f"""
-        SELECT 
-            message,
-            count() AS occurrences,
-            groupArrayDistinct(service_name) AS services
-        FROM logs
-        WHERE severity = 'ERROR'
-        AND timestamp >= {build_time_range(time_range)}
-        GROUP BY message
-        ORDER BY occurrences DESC
-        LIMIT {limit}
-    """
-    rows = client.query(query).result_rows
-    columns = client.query(query).column_names
-    return [dict(zip(columns, row)) for row in rows]
+    def compute():
+        query = f"""
+            SELECT
+                message,
+                count() AS occurrences,
+                groupArrayDistinct(service_name) AS services
+            FROM logs
+            WHERE severity = 'ERROR'
+            AND timestamp >= {build_time_range(time_range)}
+            GROUP BY message
+            ORDER BY occurrences DESC
+            LIMIT {limit}
+        """
+        rows = client.query(query).result_rows
+        columns = client.query(query).column_names
+        return [dict(zip(columns, row)) for row in rows]
+    return cache("top_errors", {"time_range": time_range, "limit": limit}, compute)
 
 
 @app.get("/dashboard/top_services")
 def dashboard_top_services(time_range: str = "1h"):
-    query = f"""
-        SELECT 
-            service_name,
-            count() AS logs,
-            sum(severity = 'ERROR') AS errors,
-            errors / logs AS error_ratio
-        FROM logs
-        WHERE timestamp >= {build_time_range(time_range)}
-        GROUP BY service_name
-        ORDER BY logs DESC
-    """
-    rows = client.query(query).result_rows
-    columns = client.query(query).column_names
-    return [dict(zip(columns, row)) for row in rows]
+    def compute():
+        query = f"""
+            SELECT
+                service_name,
+                count() AS logs,
+                sum(severity = 'ERROR') AS errors,
+                errors / logs AS error_ratio
+            FROM logs
+            WHERE timestamp >= {build_time_range(time_range)}
+            GROUP BY service_name
+            ORDER BY logs DESC
+        """
+        rows = client.query(query).result_rows
+        columns = client.query(query).column_names
+        return [dict(zip(columns, row)) for row in rows]
+    return cache("top_services", {"time_range": time_range}, compute)
 
 
 @app.get("/dashboard/services")
 def dashboard_services(time_range: str = "24h"):
-    query = f"""
-        SELECT 
-            service_name,
-            max(timestamp) AS last_seen
-        FROM logs
-        WHERE timestamp >= {build_time_range(time_range)}
-        GROUP BY service_name
-        ORDER BY last_seen DESC
-    """
-    rows = client.query(query).result_rows
-    columns = client.query(query).column_names
-    return [dict(zip(columns, row)) for row in rows]
+    def compute():
+        query = f"""
+            SELECT
+                service_name,
+                max(timestamp) AS last_seen
+            FROM logs
+            WHERE timestamp >= {build_time_range(time_range)}
+            GROUP BY service_name
+            ORDER BY last_seen DESC
+        """
+        rows = client.query(query).result_rows
+        columns = client.query(query).column_names
+        return [dict(zip(columns, row)) for row in rows]
+    return cache("services_list", {"time_range": time_range}, compute)
 
 
 @app.get("/dashboard/error_heatmap")
 def dashboard_error_heatmap(time_range: str = "6h"):
-    query = f"""
-        SELECT 
-            service_name,
-            severity,
-            count() AS count
-        FROM logs
-        WHERE timestamp >= {build_time_range(time_range)}
-        GROUP BY service_name, severity
-        ORDER BY service_name, severity
-    """
-    rows = client.query(query).result_rows
-    columns = client.query(query).column_names
-    return [dict(zip(columns, row)) for row in rows]
+    def compute():
+        query = f"""
+            SELECT
+                service_name,
+                severity,
+                count() AS count
+            FROM logs
+            WHERE timestamp >= {build_time_range(time_range)}
+            GROUP BY service_name, severity
+            ORDER BY service_name, severity
+        """
+        rows = client.query(query).result_rows
+        columns = client.query(query).column_names
+        return [dict(zip(columns, row)) for row in rows]
+    return cache("error_heatmap", {"time_range": time_range}, compute)
