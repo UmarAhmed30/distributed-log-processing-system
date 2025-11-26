@@ -2,4 +2,4 @@
 infra/flink/Dockerfile
 *.log
 */connectors/
-*/__pycache__/
+**/__pycache__/

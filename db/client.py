@@ -7,7 +7,7 @@ load_dotenv()
 
 client = clickhouse_connect.get_client(
     host = os.getenv('CLICKHOUSE_HOST', 'localhost'),
-    port = os.getenv('CLICKHOUSE_HTTP_PORT', 8120),
+    port = os.getenv('CLICKHOUSE_HTTP_PORT', 8123),
     username = os.getenv('CLICKHOUSE_USER', 'logs_user'),
     password = os.getenv('CLICKHOUSE_PASSWORD', 'logs_pass'),
     database = os.getenv('CLICKHOUSE_DB', 'logs_db')
