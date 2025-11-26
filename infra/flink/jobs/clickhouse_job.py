@@ -12,7 +12,7 @@ def main():
     
     # Kafka source
     kafka_source = KafkaSource.builder() \
-        .set_bootstrap_servers("kafka:9092") \
+        .set_bootstrap_servers("kafka:19092") \
         .set_topics("raw_logs") \
         .set_group_id("flink_processor_group") \
         .set_starting_offsets(KafkaOffsetsInitializer.earliest()) \
