@@ -88,6 +88,24 @@ services:
       - ../runtime/logs:/var/log/services:ro
     command: ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf"]
 
+  api:
+    build:
+      context: ..
+      dockerfile: app/Dockerfile
+    container_name: api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - clickhouse
+      - redis
+    env_file:
+      - ../.env
+    environment:
+      CLICKHOUSE_HOST: clickhouse
+      REDIS_HOST: redis
+    volumes:
+      - ..:/app
+
 volumes:
   kafka-data:
   clickhouse-data:
