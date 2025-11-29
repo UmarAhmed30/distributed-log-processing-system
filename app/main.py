@@ -52,7 +52,7 @@ def cache(endpoint, params, compute_fn, ttl=60):
 
 @app.get("/get_logs")
 def get_logs(
-    time_range: str = "1h",
+    time_range: str = "24h",
     log_level: Optional[str] = None,
     source_type: Optional[str] = None,
     service_name: Optional[str] = None,
