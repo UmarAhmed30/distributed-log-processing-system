@@ -1,5 +1,5 @@
 *.env
 infra/flink/Dockerfile
-*.log
+**.log
 */connectors/
 **/__pycache__/
