@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 import datetime
@@ -12,6 +13,16 @@ from infra.redis.client import RedisCache
 from utils.log_advisor import analyze
 
 app = FastAPI(title="Distributed Log Processing System API")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Next.js frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 redis = RedisCache()
 
 # -------------------------------
@@ -67,7 +78,7 @@ def get_logs(
     if source_type:
         conditions.append(f"source_type = '{source_type}'")
     if service_name:
-        conditions.append(f"service_name = '{service_name}'")
+        conditions.append(f"service_name ILIKE '%{service_name}%'")
     if host_ip:
         conditions.append(f"host_ip = '{host_ip}'")
     if message_contains:
@@ -167,7 +178,7 @@ def dashboard_services(time_range: str = "24h"):
         query = f"""
             SELECT
                 service_name,
-                max(timestamp) AS last_seen
+                toString(max(timestamp)) AS last_seen
             FROM logs
             WHERE timestamp >= {build_time_range(time_range)}
             GROUP BY service_name
