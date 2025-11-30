@@ -182,7 +182,7 @@ Create table:
 
     flink run -d -m flink_jobmanager:8081   -py /opt/flink/usrlib/clickhouse_job.py
 
-Flink UI: http://localhost:8081\
+Flink UI: http://localhost:8081/
 
 API Docs: http://localhost:8000/docs
 
