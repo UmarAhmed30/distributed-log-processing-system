@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { getLogs, getErrorHeatmap, suggestFix, LogEntry, getTopErrors, getTopServices, getServices, TopError, TopService } from '@/lib/api';
 
 export default function Home() {
@@ -31,7 +32,11 @@ export default function Home() {
   // Fetch logs on component mount and when filters change
   useEffect(() => {
     fetchLogs();
-    fetchHeatmap();
+    // Delay heatmap fetch slightly to avoid race condition
+    const timer = setTimeout(() => {
+      fetchHeatmap();
+    }, 500);
+    return () => clearTimeout(timer);
   }, [timeRange, logLevel, serviceName, limit]);
 
   // Fetch stats when statsView changes
@@ -68,12 +73,13 @@ export default function Home() {
   const fetchHeatmap = async () => {
     try {
       const data = await getErrorHeatmap(timeRange);
-      setHeatmapData(data);
+      if (Array.isArray(data)) {
+        setHeatmapData(data);
+      }
     } catch (error: any) {
       // Silently handle heatmap errors - it's not critical
-      if (error.response?.status !== 404) {
-        console.warn('Error fetching heatmap:', error.message);
-      }
+      console.warn('Error fetching heatmap:', error.message);
+      setHeatmapData([]);
     }
   };
 
@@ -349,16 +355,90 @@ export default function Home() {
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-bold text-gray-900 mb-4">Error Overview</h2>
         {heatmapData.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">No heatmap data available</div>
+          <div className="text-center py-8 text-gray-500">No data available</div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {heatmapData.map((item, index) => (
-              <div key={index} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="text-sm font-medium text-gray-700">{item.service_name}</div>
-                <div className="text-xs text-gray-500 mt-1">{item.severity}</div>
-                <div className="text-2xl font-bold text-gray-900 mt-2">{item.count}</div>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Pie Chart - Severity Distribution */}
+            <div>
+              <h3 className="text-md font-semibold text-gray-800 mb-4 text-center">Log Distribution by Severity</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={(() => {
+                      const severityMap = heatmapData.reduce((acc: any, item) => {
+                        acc[item.severity] = (acc[item.severity] || 0) + item.count;
+                        return acc;
+                      }, {});
+                      return Object.entries(severityMap).map(([severity, count]) => ({
+                        name: severity,
+                        value: count
+                      }));
+                    })()}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }: any) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {(() => {
+                      const COLORS: Record<string, string> = {
+                        'ERROR': '#ef4444',
+                        'WARN': '#f59e0b',
+                        'INFO': '#3b82f6',
+                        'DEBUG': '#6b7280'
+                      };
+                      const severityMap = heatmapData.reduce((acc: any, item) => {
+                        acc[item.severity] = (acc[item.severity] || 0) + item.count;
+                        return acc;
+                      }, {});
+                      return Object.keys(severityMap).map((key, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[key] || '#8884d8'} />
+                      ));
+                    })()}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Bar Chart - Top Services */}
+            <div>
+              <h3 className="text-md font-semibold text-gray-800 mb-4 text-center">Logs by Service</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  data={(() => {
+                    const serviceMap = heatmapData.reduce((acc: any, item) => {
+                      acc[item.service_name] = (acc[item.service_name] || 0) + item.count;
+                      return acc;
+                    }, {});
+                    return Object.entries(serviceMap)
+                      .map(([service, count]) => ({ service, count }))
+                      .sort((a: any, b: any) => b.count - a.count)
+                      .slice(0, 5);
+                  })()}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 60 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="service" 
+                    angle={-45} 
+                    textAnchor="end" 
+                    height={80}
+                    tick={{ fill: '#374151', fontSize: 12 }}
+                  />
+                  <YAxis />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #d1d5db' }}
+                    labelStyle={{ color: '#111827', fontWeight: 'bold' }}
+                    itemStyle={{ color: '#111827' }}
+                  />
+                  <Bar dataKey="count" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         )}
       </div>
