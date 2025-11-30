@@ -13,5 +13,4 @@ wget https://repo1.maven.org/maven2/com/clickhouse/flink-connector-clickhouse/1.
 wget https://repo1.maven.org/maven2/com/clickhouse/flink/flink-connector-clickhouse-1.17/0.1.1/flink-connector-clickhouse-1.17-0.1.1-all.jar -OutFile flink-connector-clickhouse-1.17-0.1.1-all.jar
 
 wget https://repo1.maven.org/maven2/org/apache/flink/flink-shaded-guava/30.1.1-jre-16.1/flink-shaded-guava-30.1.1-jre-16.1.jar -OutFile flink-shaded-guava-30.1.1-jre-16.1.jar
-
 flink run -d -m flink_jobmanager:8081 -py /opt/flink/usrlib/clickhouse_job.py
