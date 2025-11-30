@@ -11,7 +11,7 @@ including:
 -   Real-time processing & schema unification via **Apache Flink**
 -   High-performance OLAP storage in **ClickHouse**
 -   Low-latency caching & live querying with **Redis**
--   Optional **AI-powered summarization & anomaly detection**
+-   Support for **AI-powered summarization & anomaly detection**
 
 ------------------------------------------------------------------------
 
@@ -182,6 +182,7 @@ Create table:
     flink run -d -m flink_jobmanager:8081   -py /opt/flink/usrlib/clickhouse_job.py
 
 Flink UI: http://localhost:8081\
+
 API Docs: http://localhost:8000/docs
 
 ------------------------------------------------------------------------
