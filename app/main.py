@@ -203,7 +203,8 @@ def dashboard_error_heatmap(time_range: str = "6h"):
             GROUP BY service_name, severity
             ORDER BY service_name, severity
         """
-        rows = client.query(query).result_rows
-        columns = client.query(query).column_names
+        query_result = client.query(query)
+        rows = query_result.result_rows
+        columns = query_result.column_names
         return [dict(zip(columns, row)) for row in rows]
     return cache("error_heatmap", {"time_range": time_range}, compute)
