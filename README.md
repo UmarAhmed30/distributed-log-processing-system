@@ -193,5 +193,13 @@ API Docs: http://localhost:8000/docs
     cd runtime
     python fake_service_log_writer.py
 
+------------------------------------------------------------------------
+
+## 9. Setup Web UI
+
+    cd frontend
+    npm install
+    npm run dev
+
 Dashboard:\
-http://localhost:5000/
+http://localhost:3000/
